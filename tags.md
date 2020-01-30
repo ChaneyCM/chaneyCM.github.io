@@ -1,7 +1,7 @@
 ---
 layout: page
 title: "Tags"
-description: "哈哈，你找到了我的文章基因库"  
+description: "博客整理与归类"  
 header-img: "img/Red-Brown.jpg"  
 ---
 
@@ -11,6 +11,8 @@ header-img: "img/Red-Brown.jpg"
 2. 点击它
 3. 相关的文章会「唰」地一声跳到页面顶端
 4. 马上试试？
+
+【NLP练习的地方？】
 
 ## 基因列表
 
