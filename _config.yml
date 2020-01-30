@@ -7,7 +7,7 @@ description: "ChenCheng's blog"
 keyword: "陈诚的博客, chencheng, java, c++"
 url: "http://cent-c.github.io"          # your host, for absolute URL
 baseurl: ""      # for example, '/blog' if your blog hosted on 'host/blog'
-github_repo: "https://github.com/cent-c/cent-c.github.io.git" # you code repository
+github_repo: "https://github.com/cent-c" # you code repository
 
 # Sidebar settings
 sidebar: true                           # whether or not using Sidebar.
