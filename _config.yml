@@ -1,7 +1,7 @@
 # Site settings
 title: HOME                               # 博客的标题
 SEOTitle: 陈诚的博客 | Blog                # 显示在浏览器标签上的标题
-header-img: img/post-bg-desk.jpg          
+header-img: img/web-icon.png       
 email: chencheng_199709@163.com
 description: "ChenCheng's blog"
 keyword: "陈诚的博客, chencheng, java, c++"
@@ -12,7 +12,7 @@ github_repo: "https://github.com/cent-c/cent-c.github.io.git" # you code reposit
 # Sidebar settings
 sidebar: true                           # whether or not using Sidebar.
 sidebar-about-description: "尽吾至而不能至，可以无悔矣。"
-sidebar-avatar: /img/about-BY-gentle.jpg      # use absolute URL, seeing it's used in both `/` and `/about/`
+sidebar-avatar: /img/chencheng.jpg       # use absolute URL, seeing it's used in both `/` and `/about/`
 
 
 
@@ -85,7 +85,7 @@ ga_domain: auto
 
 # Featured Tags
 featured-tags: true                     # 是否使用首页标签
-featured-condition-size: 1              # 相同标签数量大于这个数，才会出现在首页
+featured-condition-size: 3              # 相同标签数量大于这个数，才会出现在首页
 
 
 
