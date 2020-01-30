@@ -1,16 +1,16 @@
 # Site settings
-title: 笨方法学写作
+title: cent-c的个人主页
 header-img: "img/Xacebook.jpg"
 tagline: "cn"  
-description: "笨方法学写作|这一次彻底学会写作"  
+description: "个人主页、博客"  
 baseurl: ""
 url: "http://www.cnfeat.com"  
 
 # About/contact
 owner: 
-  name: "陈素封"
-  email: CNFeat@gmail.com
-  bio: "笨方法学写作"
+  name: "陈诚"
+  email: chencheng_199709@163.com
+  bio: "简历"
 
 # Data
 gavatar: img/favicon1.ico
