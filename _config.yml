@@ -1,14 +1,14 @@
 # Site settings
-title: cent-c
+title: HOME
 header-img: "img/Xacebook.jpg"
 tagline: "cn"  
 description: "个人主页、博客"
 baseurl: ""
-url: "http://www.cnfeat.com"
+url: "http://www.chencheng.xin"
 
 # About/contact
 owner: 
-  name: "陈诚"
+  name: "cent-c"
   email: chencheng_199709@163.com
   bio: "简历"
 
