@@ -1,7 +1,7 @@
 # Site settings
 title: HOME                               # 博客的标题
 SEOTitle: 陈诚的博客 | Blog                # 显示在浏览器标签上的标题
-header-img: img/post-bg-github-cup.jpg       
+header-img: img/post-bg-unix-linux.jpg     
 email: chencheng_199709@163.com
 description: "ChenCheng's blog"
 keyword: "陈诚的博客, chencheng, java, c++"
