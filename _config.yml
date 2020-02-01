@@ -1,9 +1,9 @@
 # Site settings
-title: HOME                               # 博客的标题
+title: 陈诚的博客                               # 博客的标题
 SEOTitle: 陈诚的博客 | Blog                # 显示在浏览器标签上的标题
 header-img: img/web-icon.png       
 email: chencheng_199709@163.com
-description: "ChenCheng's blog"
+description: "Every failure is leading towards success."
 keyword: "陈诚的博客, chencheng, java, c++"
 url: "http://cent-c.github.io"          # your host, for absolute URL
 baseurl: ""      # for example, '/blog' if your blog hosted on 'host/blog'
@@ -19,7 +19,7 @@ sidebar-avatar: /img/chencheng.jpg       # use absolute URL, seeing it's used in
 # SNS settings
 RSS: false
 # weibo_username:     qiubaiying
-zhihu_username:     chen-cheng-69-5
+zhihu_username:     Chen.c
 github_username:    cent-c
 jianshu_username:   c53bed4a2a16
 #twitter_username:   qiubaiying
