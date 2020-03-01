@@ -1,6 +1,6 @@
 ---
 layout:     post
-title:      CS224n:Project5基于Char的机器翻译模型
+title:      CS224n:Project2Word2Vec原理及实现
 subtitle:   CS224n系列
 date:       2020-02-29
 author:     chen cheng
@@ -10,9 +10,6 @@ tags:
     - 项目整理
 ---
 
-## 项目介绍
+## 第一篇博文
 
-![phonedest.jpg](/img/swx/phonedest.jpg)
-
-
-## 源代码重点介绍
+博客今天建好了，希望以后多多总结学过的知识，并分享出去。
