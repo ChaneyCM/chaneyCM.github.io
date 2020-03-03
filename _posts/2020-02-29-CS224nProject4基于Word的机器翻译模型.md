@@ -10,15 +10,15 @@ tags:
     - 项目整理
 ---
 
-## 一、项目介绍
+### 一、项目介绍
 ![a4_model.jpg](/img/2020-02-29/a4_model.jpg)
 
 本Project使用带有**全局注意力机制**的**seq2seq**模型实现了西班牙语（source，src）到英语（target，tgt）的机器翻译功能。因此对于**python**以及**pytorch**的使用会更加熟练，对相关模型的细节理解得更加深刻。
 
 OOV问题（Out Of Memory问题）
 
-## 二、源代码分析
-### 1.如何将文本资源（西班牙语和英语的翻译训练集）处理成Vocabulary类对象？（提取文本资源中频率最高的一部分单词并分配对应id）
+### 二、源代码分析
+#### 1.如何将文本资源（西班牙语和英语的翻译训练集）处理成Vocabulary类对象？（提取文本资源中频率最高的一部分单词并分配对应id）
 
 ![a4_train_en.jpg](/img/2020-02-29/a4_train_en.jpg)
 
@@ -57,7 +57,7 @@ OOV问题（Out Of Memory问题）
 ![a4_vocab_json.jpg](/img/2020-02-29/a4_vocab_json.jpg)
 
 
-### 2. 如何将句子按批处理成模型输入的？即Model的forward方法的参数。
+#### 2. 如何将句子按批处理成模型输入的？即Model的forward方法的参数。
 ``` 
 train_data_src = read_corpus(args['--train-src'], source='src')  
 # list<list(str)>   len:21w
@@ -88,7 +88,7 @@ while True:
 
 
 
-### 3. 模型的forward函数具体做了什么？（forward函数非常重要，可从forward的返回值中计算出loss损失以进行反向传播和训练）
+#### 3. 模型的forward函数具体做了什么？（forward函数非常重要，可从forward的返回值中计算出loss损失以进行反向传播和训练）
 ![a4_model_forward.jpg](/img/2020-02-29/a4_model_forward.jpg)
 下面对重要的代码依次分析：
 ``` 
@@ -111,8 +111,9 @@ pad_sents的实现代码可以再优化，因为最长的肯定是第一句，�
 enc_hiddens, dec_init_state = self.encode(source_padded, source_lengths)
 ``` 
 
+
 ----------------------------
-### 4. 模型的encode函数具体做了什么？（forward函数中调用了encode）
+#### 4. 模型的encode函数具体做了什么？（forward函数中调用了encode）
 encode的两个参数：source_padded是被补齐的，每句话的真实长度由source_lengths记录。
 ![a4_encode_1.jpg](/img/2020-02-29/a4_encode_1.jpg)
 ![a4_encode_2.jpg](/img/2020-02-29/a4_encode_2.jpg)
@@ -138,20 +139,6 @@ pack_padded_sequence, pad_packed_sequence都是torch.nn.utils.rnn包中的函数
 
 所以重要的是，了解LSTM的forward的输入格式和返回值，输入值是(max_sentence_len, batch, embedding)，也可以进行pack_padded_sequence，返回值是enc_hiddens, (last_hidden, last_cell)。如果传入时pack了，那么enc_hiddens还需要pad_packed，用0去填充。元组中的last_hidden，如果是biLSTM，那么它有两个向量，是双向的最后一个隐藏层向量，我们可以手动使用torch.cat对这两个tensor向量进行连接。
 
-
-### 5. 模型的decode函数具体做了什么？（forward函数中调用了decode）
-![a4_decode_1.jpg](/img/2020-02-29/a4_decode_1.jpg)
-![a4_decode_2.jpg](/img/2020-02-29/a4_decode_2.jpg)
-参数target_padded就是原句子前后加上\<s\>\</s\>后，再使用\<pad\>进行补齐后的目标语言答案。
-
-
-
-
---------------------------------------
-### 6. 模型的step函数具体做了什么？（decode函数中调用了多次step函数）
-
-从这里也看出了LSTM和LSTMCell的区别到底是什么。主要是forward函数不同。前者可以把整个timestep输入，返回值则是所有的h等；而后者只是把单步数据输入，输出单步的隐藏层数据。
-
 ``` 
 enc_masks = self.generate_sent_masks(enc_hiddens, source_lengths)
 ``` 
@@ -162,6 +149,55 @@ enc_masks的shape是(max_sentence_len, batch)。1代表有单词，0代表是pad
 combined_outputs = self.decode(enc_hiddens, enc_masks, dec_init_state, target_padded)
 ``` 
 
-``` 
+#### 5. 模型的decode函数具体做了什么？（forward函数中调用了decode）
+![a4_decode_1.jpg](/img/2020-02-29/a4_decode_1.jpg)
+![a4_decode_2.jpg](/img/2020-02-29/a4_decode_2.jpg)
+参数target_padded就是原句子前后加上\<s\>\</s\>后，再使用\<pad\>进行补齐后的目标语言答案。
+
+
+decode就是将答案语句拆开成词，且统一去掉最后一个词。每一个词都调用一下step函数放入LSTMCell就会得到一个Ot向量，decode函数用一个列表保存下来所有Ot向量，并使用torch.stack把max_sentence_len个shape为(32, 256)的tensor变成shape为(50, 32, 256)的tensor。
+
+--------------------------------------
+#### 6. 模型的step函数具体做了什么？（decode函数中调用了多次step函数）
+![a4_step_1.jpg](/img/2020-02-29/a4_step_1.jpg)
+![a4_step_2.jpg](/img/2020-02-29/a4_step_2.jpg)
+![a4_step_3.jpg](/img/2020-02-29/a4_step_3.jpg)
+step函数要做的就是把输入向量Y_t（维度e+h，由单词的embedding和上一次的Ot-1组成）和初始化隐藏状态输入进decoder，然后就会输出新的隐藏状态。下面利用新的隐藏状态和encoder的隐藏层状态（已经从2h映射到h维度）做batch multiplication就得到了隐藏层各timestep的权重。得到权重后要利用enc_masks将无单词部分的权重置为负无穷，这样在经过softmax之后，它真正的权重就会变成0. （如果不将原始权重置为负无穷，它应该算出来是0. 因为隐藏层状态unpack是用0填充的，那做一个mul相乘最后得到的原始权重肯定是0）。
+
+从这里也看出了LSTM和LSTMCell的区别到底是什么。主要是forward函数不同。前者可以把整个timestep输入，返回值则是所有的h等；而后者只是把单步数据输入，输出单步的隐藏层数据。
+
+要注意api上有bmm和unsqueeze/squeeze等常用api。根据算出的权重得到上下文之后，再和隐藏层h进行torch.cat得到维度为3h的向量后，映射到h维度，然后O_t = self.dropout(torch.tanh(V_t))。返回O_t和新的隐藏层状态就是step的任务。
+
+---------------------------------------
+### 3. 续 forward函数
+![a4_forward_continue.jpg](/img/2020-02-29/a4_forward_continue.jpg)
+```
+line 118:
 P = F.log_softmax(self.target_vocab_projection(combined_outputs), dim=-1)
 ``` 
+最终计算等同于log(softmax(x))，但实际内部有优化。P的数值都会是负数，P的shape是(50, 32, 5002)，也就是(max_sentence_len, batch_size, vocab_size)。
+
+```
+target_masks = (target_padded != self.vocab.tgt['<pad>']).float()
+
+# Compute log probability of generating true target words
+
+target_gold_words_log_prob = torch.gather(P, index=target_padded[1:].unsqueeze(-1), dim=-1).squeeze(-1) * target_masks[1:]
+
+scores = target_gold_words_log_prob.sum(dim=0)
+
+return scores
+```
+
+target_padded, target_masks的shape是(51, 32)。
+
+torch.gather(P, index, dim=-1). 就是选择P的dim维，按照index提供的索引进行选择。三维的P经过选择还是三维，只是最后一维可以被squeeze。
+
+向量的简单的\*相乘，就是对应位置相乘。掩码对于这个\*乘号很有用。算出的loss在求和之前还是需要把pad对应的loss置为0. Decoder并没有对pad语句进行特殊处理。还是需要将所有词都放入Decoder，包括\<pad\>。
+
+scores的shape是(32,), batch中的每一句话都算一个loss和。
+
+
+--------------------------------------
+### 7. 整个项目的训练过程是怎样的？
+
