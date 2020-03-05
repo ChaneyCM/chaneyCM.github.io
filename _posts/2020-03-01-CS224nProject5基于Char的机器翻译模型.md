@@ -2,7 +2,7 @@
 layout:     post
 title:      CS224n:Project5基于Char的机器翻译模型
 subtitle:   CS224n系列
-date:       2020-02-29
+date:       2020-03-01
 author:     chen cheng
 header-img: img/post-bg-unix-linux.jpg
 catalog: true
@@ -10,17 +10,59 @@ tags:
     - 项目整理
 ---
 
-## 项目介绍
+### 一、项目介绍
 
-![odest.jpg](/img/swx/phest.jpg)
+![a5_char_based_conv_encoder.jpg](/img/2020-03-01/a5_char_based_conv_encoder.jpg)
+
+![a5_model.jpg](/img/2020-03-01/a5_model.jpg)
+
+模型大体与a4相像，最主要的区别来自encoder是基于字符的，而decoder有两个：一个是基于word的decoder模型的，另一个是在基于word的decoder模型输出\<unk\>的时候启用的基于char的decoder。
+
+OOV问题（Out Of Memory问题）
 
 
-## 源代码重点介绍
+### 二、源代码重点介绍
+#### 1.如何将文本资源（西班牙语和英语的翻译训练集）处理成Vocabulary类对象？
+
+
+#### 2. 如何将句子按批处理成模型输入的？即Model的forward方法的参数。
+![a5_to_input_tensor_char.jpg](/img/2020-03-01/a5_to_input_tensor_char.jpg)
+idx_sents = words2charindices(sents)仅仅是将句子中每个字符都变成对应的charid，同时记得每个单词的前后都添加上'{'和'}'这两个char对应的id。
+
+pad_sents_char(idx_sents, char_pad_token=self.char2id['<pad>']). 
+这个方法将句子补齐到max_sentence_len长度，将每个单词都补齐到固定的字符数量，只利用pad这一个字符来填充。
+
+使用torch.tensor把三维list变成三维tensor，然后torch.transpose(sents_var, 0, 1)变成(max_sentence_len, batch, max_word_len)。
+
+
+#### 3. 模型的forward函数具体做了什么？（forward函数非常重要，可从forward的返回值中计算出loss损失以进行反向传播和训练）
+
+相比较A4，代码几乎全赋值，少量变化有：
+
+- Embedding层是精心设计的char-level的模型，利用了CNN和high-way结构。而不再是简单的基于word的nn.Embedding层；
+- 引入一个新的charDecoder模型，处理decoder模型输出\<unk\>单词的情形。
+
+encoder的时候，已经不需要源word2id的这种映射关系了。encode时，仅仅在embedding层上做改变即可，同时放弃了word2id。decode方法中的Decoder也仅仅是embedding层变化。但是target上的word2id还是有用的，在Ot映射出具体单词的时候，还是需要这个word2id来标明正确答案的。
+
+关键需要理解charDecoder的实现机制：
+
+在训练的时候并不是仅仅依赖unk来训练，而是全体生成词，都需要训练。真正的译文是没有unk的，所以全部单词都可以参与训练。
+
+将charDecoder的输入数据变成两维，第一维是单个word中最大char数量，第二维是所有单词（不论是相同batch句子还是不同batch句子）。
+
+训练过程中，假设本次batch有两句话，那么charDecoder的训练就是先通过基于word的Decoder得到combined_output, 然后利用view(-1, 256)处理成(38, 256)的形式，38意味着这两句话一共有38个word，256则是对应的每一个word放进去之后的output向量。
+
+然后将charDecoder的输入数据处理好，即这两句话共有38个词，max_word_len是21。因此处理成shape=(38, 21)的形式，在放入charDecoder前，将隐藏状态调用.t()将shape变成(21, 38)。
 
 
 
-## QA
-#### BLUE、PPL指标的含义？
+
+### 三、QA
+BLEU的计算方式：
+https://blog.csdn.net/guolindonggld/article/details/56966200
+
+PPL的计算方式：
+https://blog.csdn.net/u012852385/article/details/81224558
 
 ## 课后习题
 # CS 224n: Assignment #5
@@ -59,7 +101,7 @@ $$
 - Advantage: Get the strongest pattern in the data.
 - Disadvantage: Discard most info in the data.
 
-&emsp;&emsp;**Max pooling**:
+&emsp;&emsp;**Average pooling**:
 
 - Advantage: Preseved all data info, because we make a average.
 - Disadvantage: For other hand, if there is two many small values and only few big values, the strong signal dilutes and we just get a relatively small result(pattern or texture).
